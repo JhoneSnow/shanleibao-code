@@ -22,6 +22,7 @@ from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import GridSearchCV
 
 class BrainNet(nn.Module):
+
     def __init__(self):
         super(BrainNet, self).__init__()
         self.conv1 = nn.Conv3d(
@@ -66,6 +67,75 @@ class BrainNet(nn.Module):
         x = self.Dense2(x)
         return x
 
+class InfantBrainNet(nn.Module):
+    def __init__(self):
+        super(InfantBrainNet, self).__init__()
+        self.conv1 = nn.Conv3d(
+            1,
+            30,
+            kernel_size=(6, 6, 6),
+            #stride=(2, 2, 2),
+            #padding=(3, 3, 3),
+            bias=False
+        )
+        self.relu1 = nn.ReLU(inplace=True)
+        self.batch_nom = nn.BatchNorm3d(30)
+        self.maxpooling = nn.MaxPool3d(4)
+        self.conv2 = nn.Conv3d(30,
+                               30,
+                               kernel_size=(3, 3, 3),
+                               #stride=(2, 2, 2),
+                               #padding=(3, 3, 3),
+                               bias=False
+                               )
+        self.maxpooling2 = nn.MaxPool3d(3)
+        self.conv3 = nn.Conv3d(30,
+                               30,
+                               kernel_size=(3, 3, 3),
+                               #stride=(2, 2, 2),
+                               #padding=(3, 3,3 ),
+                               bias=False
+
+                               )
+        self.maxpooling3 = nn.MaxPool3d(2)
+
+        self.conv4 = nn.Conv3d(30,
+                               30,
+                               kernel_size=(2, 2, 2),
+                               #stride=(2, 2, 2),
+                               #padding=(3, 3, 3),
+                               bias=False
+                               )
+        self.GlobalMaxPooling = nn.AdaptiveMaxPool3d((6, 6, 6))
+        self.Dense1 = nn.Linear(216, 32)
+        self.Dense2 = nn.Linear(32, 2)
+        self.Dropout = nn.Dropout(0.5)
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.batch_nom(x)
+        x = self.relu1(x)
+        x = self.maxpooling(x)
+        x = self.conv2(x)
+        x = self.batch_nom(x)
+        x = self.relu1(x)
+        x = self.maxpooling2(x)
+        x = self.conv3(x)
+        x = self.batch_nom(x)
+        x = self.relu1(x)
+        x = self.maxpooling2(x)
+        x = self.conv4(x)
+        x = self.batch_nom(x)
+        x = self.relu1(x)
+        x = self.maxpooling3(x)
+        x = self.GlobalMaxPooling(x)
+        x = x.view(x.size(0), -1)
+        x = F.relu(self.Dense1(x))
+        x = self.Dropout(x)
+        x = F.softmax(self.Dense2(x))
+
+
+
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -77,7 +147,7 @@ test_dataset = LiverDataset_val("/home/sinclair/Documents/nii/target_data/target
 def Grad_search():
     torch.manual_seed(0)
     #model, parameters = generate_model(sets)
-    model = BrainNet()
+    model = InfantBrainNet()
     #model = model.module
     net = NeuralNetClassifier(model,
                               max_epochs= 50,
