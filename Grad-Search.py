@@ -74,8 +74,8 @@ class InfantBrainNet(nn.Module):
             1,
             30,
             kernel_size=(6, 6, 6),
-            #stride=(2, 2, 2),
-            #padding=(3, 3, 3),
+            stride=(2, 2, 2),
+            padding=(3, 3, 3),
             bias=False
         )
         self.relu1 = nn.ReLU(inplace=True)
@@ -84,16 +84,16 @@ class InfantBrainNet(nn.Module):
         self.conv2 = nn.Conv3d(30,
                                30,
                                kernel_size=(3, 3, 3),
-                               #stride=(2, 2, 2),
-                               #padding=(3, 3, 3),
+                               stride=(2, 2, 2),
+                               padding=(3, 3, 3),
                                bias=False
                                )
         self.maxpooling2 = nn.MaxPool3d(3)
         self.conv3 = nn.Conv3d(30,
                                30,
                                kernel_size=(3, 3, 3),
-                               #stride=(2, 2, 2),
-                               #padding=(3, 3,3 ),
+                               stride=(2, 2, 2),
+                               padding=(3, 3,3 ),
                                bias=False
 
                                )
@@ -102,12 +102,12 @@ class InfantBrainNet(nn.Module):
         self.conv4 = nn.Conv3d(30,
                                30,
                                kernel_size=(2, 2, 2),
-                               #stride=(2, 2, 2),
-                               #padding=(3, 3, 3),
+                               stride=(2, 2, 2),
+                               padding=(3, 3, 3),
                                bias=False
                                )
-        self.GlobalMaxPooling = nn.AdaptiveMaxPool3d((6, 6, 6))
-        self.Dense1 = nn.Linear(216, 32)
+        self.GlobalMaxPooling = nn.AdaptiveMaxPool3d((2, 2, 2))
+        self.Dense1 = nn.Linear(4320, 32)
         self.Dense2 = nn.Linear(32, 2)
         self.Dropout = nn.Dropout(0.5)
 
@@ -129,7 +129,8 @@ class InfantBrainNet(nn.Module):
         x = self.relu1(x)
         x = self.maxpooling3(x)
         x = self.GlobalMaxPooling(x)
-        x = x.view(x.size(0), -1)
+        #x = x.view(x.size(0), -1)
+        x = torch.flatten(x)
         x = F.relu(self.Dense1(x))
         x = self.Dropout(x)
         x = F.softmax(self.Dense2(x))
