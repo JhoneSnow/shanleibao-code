@@ -197,13 +197,7 @@ def Grad_search():
     y = np.array([y for x, y in iter(liver_dataset)])
     gs.fit(liver_dataset, y)
 '''
-
-
-
-
-
-
-if __name__ == '__main__':
+ __name__ == '__main__':
     # settting
     sets = parse_opts()
     sets.target_type = "normal"
